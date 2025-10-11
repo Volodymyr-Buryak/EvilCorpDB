@@ -117,7 +117,6 @@ ALTER TABLE clients
     ADD CONSTRAINT check_clients_registration_date_after_birth
         CHECK (registration_date >= birth_date);
 
-
 -- Таблиця [contracts]
 CREATE TABLE contracts
 (
@@ -157,6 +156,17 @@ ALTER TABLE contracts
     ADD CONSTRAINT check_contracts_insurance_payment
     CHECK (insurance_payment > 0);
 
+ALTER TABLE contracts
+    DROP CONSTRAINT check_contracts_insurance_payment;
+
+-- Розрахунок страхової виплати
+ALTER TABLE contracts
+    DROP COLUMN insurance_payment;
+
+ALTER TABLE contracts
+    ADD COLUMN insurance_payment NUMERIC(12, 2)
+        GENERATED ALWAYS AS (insurance_sum * tariff_rate) STORED;
+
 
 -- Таблиця [insurance_types]
 CREATE TABLE insurance_types
@@ -175,7 +185,6 @@ ALTER TABLE insurance_types
 ALTER TABLE insurance_types
     ADD CONSTRAINT check_insurance_types_commission_rate
     CHECK (commission_rate > 0 AND commission_rate <= 1);
-
 
 
 -- c. Встановлення зв’язків між таблицями засобами мови SQL:
@@ -228,6 +237,3 @@ ALTER TABLE contracts
 ALTER TABLE contracts
     ADD CONSTRAINT fk_contracts_type_id
         FOREIGN KEY (type_id) REFERENCES insurance_types (type_id);
-
-
-
